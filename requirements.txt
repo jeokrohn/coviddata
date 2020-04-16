@@ -1,3 +1,5 @@
 PyGitHub
 notebook
 pandas
+matplotlib
+numpy
