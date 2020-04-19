@@ -101,14 +101,40 @@ def covid_preprocess(covid):
     covid.drop(covid[(covid.Country_Region == 'Mainland China') & (covid.Date >= first_china)].index, inplace=True)
     covid.loc[covid.Country_Region == 'Mainland China', 'Country_Region'] = 'China'
 
-    # set defaults for Deaths and Recovered
-    for c in ['Deaths', 'Recovered']:
-        covid[c].fillna(value=0, inplace=True)
+    # Replace 'South Korea' and 'Republic of Korea' with 'Korea, South'
+    covid.loc[covid.Country_Region.isin(['South Korea', 'Republic of Korea']), 'Country_Region'] = 'Korea, South'
+
+    # Finally 'Iran' and 'Iran (Islamic Republic of)' seem to be redundant
+    covid.loc[covid.Country_Region == 'Iran (Islamic Republic of)', 'Country_Region'] = 'Iran'
+
+    # Default sort order
+    covid.sort_values(by=['Date', 'Country_Region'], inplace=True)
+    covid = covid.reset_index(drop=True)
 
     # set defaults for Deaths, Recovered, and Confirmed
     for c in ['Deaths', 'Recovered', 'Confirmed']:
         covid[c].fillna(value=0, inplace=True)
+
+    # We are only interested in sums per date and country
+    # and the dataframe will be indexed by country and date
+    covid = covid.drop(columns=['FIPS', 'Lat', 'Long_']).groupby(by=['Country_Region', 'Date']).sum()
+
     covid.Active = covid.Confirmed - covid.Deaths - covid.Recovered
+
+    covid = covid.sort_values(by=['Date', 'Country_Region'])
+    # create some deltas
+    g = covid.groupby(by='Country_Region')
+    def test(x):
+        c = x.iloc[0].Country_Region
+        print(c)
+        x.info()
+        print(x.shape)
+        if c == 'Germany':
+            print(1)
+
+    g.apply(test)
+
+    g = covid.groupby(by=['Country_Region', 'Date']).rolling(5, on='Date').mean().diff()
     return covid
 
 
