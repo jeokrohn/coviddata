@@ -192,6 +192,7 @@ def main():
     logging.getLogger('urllib3').setLevel(logging.INFO)
     logging.getLogger('github').setLevel(logging.INFO)
     get_csvs()
+    return
     population = read_population_un()
 
     csv_files = glob.glob(os.path.join(CSV_PATH, '*.csv'))
