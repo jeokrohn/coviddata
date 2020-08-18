@@ -1,5 +1,5 @@
 import logging
-from github import Github, ContentFile
+from github import Github
 import pandas as pd
 import numpy as np
 import glob
@@ -22,8 +22,8 @@ def get_csvs():
 
     local_csvs = glob.glob(os.path.join(CSV_PATH, '*.csv'))
     local_csvs = list(map(os.path.basename, local_csvs))
-    need_dowload = [f for f in c if f.path.endswith('.csv') and os.path.basename(f.path) not in local_csvs]
-    for cf in need_dowload:
+    need_download = [f for f in c if f.path.endswith('.csv') and os.path.basename(f.path) not in local_csvs]
+    for cf in need_download:
         fn = os.path.basename(cf.path)
         log.info(f'writing {fn}')
         with open(os.path.join(CSV_PATH, fn), 'wb') as f:
@@ -91,7 +91,6 @@ def covid_df_from_csv(path):
 
 
 def covid_preprocess(covid):
-
     # 'China' was reported as 'Mainland Chind' at some point
     # Looks like the 'Mainland China' records which overlap with the 'China' records don't have numbers for
     # Confirmed, Deaths, Recovered, or Active. We might as well get rid of them and then rename 'Mainland China' to
@@ -124,6 +123,7 @@ def covid_preprocess(covid):
     covid = covid.sort_values(by=['Date', 'Country_Region'])
     # create some deltas
     g = covid.groupby(by='Country_Region')
+
     def test(x):
         c = x.iloc[0].Country_Region
         print(c)
